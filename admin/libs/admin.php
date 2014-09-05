@@ -53,15 +53,19 @@
             register_setting($this->namespace, $this->namespace . '-options', array($this, 'validateOptions'));
 
             add_settings_section($this->namespace . '-nodes-section', __('Purge Relay Hosts'), array($this, 'nodesSectionText'), $this->namespace);
-            add_settings_field($this->namespace . '-host', __('Enter URLs delimited by carriage returns ') . 
+            add_settings_field($this->namespace . '-host', __('Enter URLs delimited by carriage returns ') .
                     '<span style="display:block;font-size:smaller;">(' .
                     __('Example:') . '&nbsp;http://your.domain.tld)</span>', array($this, 'makeSettingInputTextArea_hosts'), $this->namespace, $this->namespace . '-nodes-section');
-            add_settings_field($this->namespace . '-change', __('Connect to purge hosts with host header override?') . 
-                    '<span style="display:block;font-size:smaller;">(' .
-                    __('Current:') . '&nbsp;' . $_SERVER['HTTP_HOST'] . ')</span>', array($this, 'makeSettingInputCheckbox_change'), $this->namespace, $this->namespace . '-nodes-section');
-            add_settings_field($this->namespace . '-ignore', __('Ignore purge host if it\'s IP matches current server\'s IP?') . 
-                    '<span style="display:block;font-size:smaller;">(' .
-                    __('Current:') . '&nbsp;' .$_SERVER['SERVER_ADDR'] . ')</span>', array($this, 'makeSettingInputCheckbox_ignore'), $this->namespace, $this->namespace . '-nodes-section');
+            if (isset($_SERVER['HTTP_HOST']) && !empty($_SERVER['HTTP_HOST'])) {
+                add_settings_field($this->namespace . '-change', __('Connect to purge hosts with host header override?') .
+                        '<span style="display:block;font-size:smaller;">(' .
+                        __('Current:') . '&nbsp;' . $_SERVER['HTTP_HOST'] . ')</span>', array($this, 'makeSettingInputCheckbox_change'), $this->namespace, $this->namespace . '-nodes-section');
+            }
+            if (filter_var($_SERVER['SERVER_ADDR'], FILTER_VALIDATE_IP)) {
+                add_settings_field($this->namespace . '-ignore', __('Ignore purge host if it\'s IP matches current server\'s IP?') .
+                        '<span style="display:block;font-size:smaller;">(' .
+                        __('Current:') . '&nbsp;' . $_SERVER['SERVER_ADDR'] . ')</span>', array($this, 'makeSettingInputCheckbox_ignore'), $this->namespace, $this->namespace . '-nodes-section');
+            }
         }
 
         function adminMenu() {

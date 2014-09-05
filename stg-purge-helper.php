@@ -53,14 +53,17 @@ namespace OLWM\WP\Nginx {
                         if (!empty($this->_options['ignore']) && $ip == $_SERVER['SERVER_ADDR'])
                             continue;
 
-                        $headers = array();
-
+                        // send headers
+                        $headers = array(
+                            'User-Agent: Wordpress ' . get_bloginfo('version')
+                        );
+                        
                         // host header change?
                         if (!empty($this->_options['change'])) {
                             // get an IP URL so we can pass host header
                             $url = parse_url($host, PHP_URL_SCHEME) . '://' . $ip . $uri;
                             // attempt to override host header
-                            $headers['Host'] = $_SERVER['HTTP_HOST'];
+                            $headers[] = 'Host: ' . $_SERVER['HTTP_HOST'];
                         } else {
                             $url = $host . $uri;
                         }
@@ -71,7 +74,7 @@ namespace OLWM\WP\Nginx {
 
                         // set ooptions
                         curl_setopt($this->_ch[$handle], CURLOPT_HTTPHEADER, $headers);
-                        curl_setopt($this->_ch[$handle], CURLOPT_NOBODY, 1);
+                        //curl_setopt($this->_ch[$handle], CURLOPT_NOBODY, 1);
                         curl_setopt($this->_ch[$handle], CURLOPT_HEADER, 0);
                     }
                 }

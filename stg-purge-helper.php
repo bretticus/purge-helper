@@ -55,7 +55,7 @@ namespace OLWM\WP\Nginx {
 
                         // send headers
                         $headers = array(
-                            'User-Agent: Wordpress ' . get_bloginfo('version')
+                            'User-Agent: Wordpress/' . get_bloginfo('version')
                         );
                         
                         // host header change?

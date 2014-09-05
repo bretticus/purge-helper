@@ -25,13 +25,16 @@ namespace OLWM\WP\Nginx {
     // check for nginx-helper plugin
     if (is_plugin_active(OLWM_WP_NGINX_HELPER_NAME)) {
 
-
         class Helper {
 
             private $_queue = array();
             private $_ch = array();
             private $namespace = 'stg-purge-helper';
 
+            /**
+             * destructor that will proccess queue and send purge requests to all
+             * relay nodes that have been configured.
+             */
             function __destruct() {
 
                 // create cURL resources
@@ -76,7 +79,7 @@ namespace OLWM\WP\Nginx {
             }
 
             /**
-             *
+             * Capture all purge urls into queue.
              *
              * @param array $response
              * @param type $type
@@ -99,6 +102,11 @@ namespace OLWM\WP\Nginx {
                 }
             }
 
+            /**
+             * Get relay node hosts from database.
+             * 
+             * @return array
+             */
             function get_cluster_hosts() {
                 $options = get_option($this->namespace . '-options');
                 $field = 'hosts';

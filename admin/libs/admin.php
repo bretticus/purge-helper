@@ -1,9 +1,4 @@
 <?php
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 namespace OLWM\WP\Nginx {
     if (!defined('ABSPATH')) exit;
 
@@ -22,9 +17,6 @@ namespace OLWM\WP\Nginx {
         private $namespace = 'stg-purge-helper';
 
         public function __construct($file) {
-            // turn on buffering for redirects
-            ob_start();
-
             // Set plugin paths
             $this->file = $file;
             $this->dir = dirname($this->file);
@@ -36,6 +28,9 @@ namespace OLWM\WP\Nginx {
             $this->_wordPressHooks();
         }
 
+        /**
+         * action hooks for admin
+         */
         private function _wordPressHooks() {
             if (is_admin()) {
                 // Admin Settings
@@ -71,11 +66,17 @@ namespace OLWM\WP\Nginx {
             if (!current_user_can('manage_options')) {
                 wp_die(__('You do not have sufficient permissions to access this page.'));
             }
-            $data['options'] = get_option($this->namespace . '-options', (!empty($this->env)) ? $this->env['db'] : FALSE);
+            $data['options'] = get_option($this->namespace . '-options');
             $data['namespace'] = $this->namespace;
             echo $this->_renderView('settings.php', $data);
         }
 
+        /**
+         * Validate hosts and any other future fields
+         * 
+         * @param array $inputs
+         * @return array
+         */
         function validateOptions($inputs) {
             $new_inputs = array();
             foreach ($inputs as $key => $value) {
@@ -147,6 +148,12 @@ namespace OLWM\WP\Nginx {
             return FALSE;
         }
 
+        /**
+         * Handle magic methods
+         * 
+         * @param string $name
+         * @param array $arguments
+         */
         function __call($name, $arguments) {
             // handler for setting inputs
             if (preg_match('/^makeSettingInput(TextArea|Text|Password|Checkbox|Select|Radio)_([a-zA-Z_-]+)$/', $name, $matches)) {

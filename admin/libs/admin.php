@@ -100,7 +100,7 @@ namespace OLWM\WP\Nginx {
 
         function nodesSectionText() {
             echo '<p>' . __('Enter individual URLs (base with scheme) for each of your clustered load balanced hosts.') . '</p>';
-            echo '<p>' . __('This plugin will attempt to relay the same purge URIs that are captured when a post/page is updated.') . '</p>';
+            echo '<p>' . __('This plugin will attempt to relay the same purge URIs that are captured when a post/page is updated<br/>(currently, clicking the "Purge Cache" button will not relay to hosts.)') . '</p>';
             echo '<p>' . __('The <a href="https://rtcamp.com/nginx-helper/" target="_blank">Nginx Helper plugin</a> must be active for purge relays to work.') . '</p>';
         }
 

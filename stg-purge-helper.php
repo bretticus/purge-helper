@@ -40,9 +40,21 @@ namespace OLWM\WP\Nginx {
                 // create cURL resources
                 foreach ($this->_queue as $host => $paths) {
                     foreach ($paths as $uri) {
+                        // create a unique handle name for reference.
                         $handle = substr(sha1($host . $uri), 0, 15);
-                        $this->_ch[$handle] = curl_init();
-                        curl_setopt($this->_ch[$handle], CURLOPT_URL, $host . $uri);
+                        
+                        // get an IP URL so we can pass host header
+                        $url = parse_url($host, PHP_URL_SCHEME) . '://' . gethostbyname(parse_url($host, PHP_URL_HOST)) . $uri;
+                        
+                        $this->_ch[$handle] = curl_init($url);
+
+                        // set headers
+                        $headers = array(
+                            sprintf('Host: %s', $_SERVER['HTTP_HOST']) // attempt to override host header
+                        );
+
+                        // set ooptions                        
+                        curl_setopt($this->_ch[$handle], CURLOPT_HTTPHEADER, $headers);
                         curl_setopt($this->_ch[$handle], CURLOPT_NOBODY, 1);
                         curl_setopt($this->_ch[$handle], CURLOPT_HEADER, 0);
                     }
@@ -104,7 +116,7 @@ namespace OLWM\WP\Nginx {
 
             /**
              * Get relay node hosts from database.
-             * 
+             *
              * @return array
              */
             function get_cluster_hosts() {
@@ -121,7 +133,7 @@ namespace OLWM\WP\Nginx {
         $helper = new Helper();
         // hook http debug to get current url.
         add_action('http_api_debug', array(&$helper, 'queue_cluster_purge'), 10, 5);
-        
+
         // setup admin functionality
         include_once ('admin/libs/admin.php');
         new Admin(__FILE__);

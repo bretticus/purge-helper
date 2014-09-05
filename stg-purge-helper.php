@@ -27,9 +27,14 @@ namespace OLWM\WP\Nginx {
 
         class Helper {
 
+            private $_namespace = 'stg-purge-helper';
             private $_queue = array();
             private $_ch = array();
-            private $namespace = 'stg-purge-helper';
+            private $_options = array();
+
+            function __construct() {
+                $this->_options = get_option($this->_namespace . '-options');
+            }
 
             /**
              * destructor that will proccess queue and send purge requests to all
@@ -40,27 +45,31 @@ namespace OLWM\WP\Nginx {
                 // create cURL resources
                 foreach ($this->_queue as $host => $paths) {
                     foreach ($paths as $uri) {
-                        
+
                         // get current host's IP
                         $ip = gethostbyname(parse_url($host, PHP_URL_HOST));
-                        
+
                         // If we have already sent purge request for this host...skip.
-                        if ($ip == $_SERVER['SERVER_ADDR'])
+                        if (!empty($this->_options['ignore']) && $ip == $_SERVER['SERVER_ADDR'])
                             continue;
-                        
-                        // get an IP URL so we can pass host header
-                        $url = parse_url($host, PHP_URL_SCHEME) . '://' . $ip . $uri;                        
-                        
+
+                        $headers = array();
+
+                        // host header change?
+                        if (!empty($this->_options['change'])) {
+                            // get an IP URL so we can pass host header
+                            $url = parse_url($host, PHP_URL_SCHEME) . '://' . $ip . $uri;
+                            // attempt to override host header
+                            $headers['Host'] = $_SERVER['HTTP_HOST'];
+                        } else {
+                            $url = $host . $uri;
+                        }
+
                         // create a unique handle name for reference.
-                        $handle = substr(sha1($host . $uri), 0, 15);                        
+                        $handle = substr(sha1($host . $uri), 0, 15);
                         $this->_ch[$handle] = curl_init($url);
 
-                        // set headers
-                        $headers = array(
-                            sprintf('Host: %s', $_SERVER['HTTP_HOST']) // attempt to override host header
-                        );
-
-                        // set ooptions                        
+                        // set ooptions
                         curl_setopt($this->_ch[$handle], CURLOPT_HTTPHEADER, $headers);
                         curl_setopt($this->_ch[$handle], CURLOPT_NOBODY, 1);
                         curl_setopt($this->_ch[$handle], CURLOPT_HEADER, 0);
@@ -127,9 +136,8 @@ namespace OLWM\WP\Nginx {
              * @return array
              */
             function get_cluster_hosts() {
-                $options = get_option($this->namespace . '-options');
                 $field = 'hosts';
-                $value = (isset($options[$field])) ? $options[$field] : '';
+                $value = (isset($this->_options[$field])) ? $this->_options[$field] : '';
                 $hosts = array_map('trim', explode("\n", $value));
                 return $hosts;
             }

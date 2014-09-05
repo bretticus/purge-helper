@@ -53,7 +53,7 @@ namespace OLWM\WP\Nginx {
 
             register_setting($this->namespace, $this->namespace . '-options', array($this, 'validateOptions'));
 
-            add_settings_section($this->namespace . '-nodes-section', __('Purge Relay Nodes'), array($this, 'databaseSectionText'), $this->namespace);
+            add_settings_section($this->namespace . '-nodes-section', __('Purge Relay Hosts'), array($this, 'nodesSectionText'), $this->namespace);
             add_settings_field($this->namespace . '-host', __('Enter URLs delimited by carriage returns'), array($this, 'makeSettingInputTextArea_hosts'), $this->namespace, $this->namespace . '-nodes-section');
         }
 
@@ -73,7 +73,7 @@ namespace OLWM\WP\Nginx {
 
         /**
          * Validate hosts and any other future fields
-         * 
+         *
          * @param array $inputs
          * @return array
          */
@@ -88,7 +88,7 @@ namespace OLWM\WP\Nginx {
                                 unset($lines[$idx]);
                             }
                         }
-                        $new_inputs[$key] = implode("\n", $lines);  
+                        $new_inputs[$key] = implode("\n", $lines);
                         break;
                     default:
                         $new_inputs[$key] = sanitize_text_field($value);
@@ -98,8 +98,10 @@ namespace OLWM\WP\Nginx {
             return $new_inputs;
         }
 
-        function notifySectionText() {
-            echo __('Settings for purge helper');
+        function nodesSectionText() {
+            echo '<p>' . __('Enter individual URLs (base with scheme) for each of your clustered load balanced hosts.') . '</p>';
+            echo '<p>' . __('This plugin will attempt to relay the same purge URIs that are captured when a post/page is updated.') . '</p>';
+            echo '<p>' . __('The <a href="https://rtcamp.com/nginx-helper/" target="_blank">Nginx Helper plugin</a> must be active for purge relays to work.') . '</p>';
         }
 
         public function enqueueScripts() {
@@ -150,7 +152,7 @@ namespace OLWM\WP\Nginx {
 
         /**
          * Handle magic methods
-         * 
+         *
          * @param string $name
          * @param array $arguments
          */

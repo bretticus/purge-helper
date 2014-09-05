@@ -40,12 +40,19 @@ namespace OLWM\WP\Nginx {
                 // create cURL resources
                 foreach ($this->_queue as $host => $paths) {
                     foreach ($paths as $uri) {
-                        // create a unique handle name for reference.
-                        $handle = substr(sha1($host . $uri), 0, 15);
+                        
+                        // get current host's IP
+                        $ip = gethostbyname(parse_url($host, PHP_URL_HOST));
+                        
+                        // If we have already sent purge request for this host...skip.
+                        if ($ip == $_SERVER['SERVER_ADDR'])
+                            continue;
                         
                         // get an IP URL so we can pass host header
-                        $url = parse_url($host, PHP_URL_SCHEME) . '://' . gethostbyname(parse_url($host, PHP_URL_HOST)) . $uri;
+                        $url = parse_url($host, PHP_URL_SCHEME) . '://' . $ip . $uri;                        
                         
+                        // create a unique handle name for reference.
+                        $handle = substr(sha1($host . $uri), 0, 15);                        
                         $this->_ch[$handle] = curl_init($url);
 
                         // set headers
